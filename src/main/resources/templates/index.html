@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>StreamFlix – Inicio</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background: #1a1a2e; color: #eee; }
+        header { background: #16213e; padding: 20px 40px; display: flex; align-items: center; gap: 20px; }
+        header h1 { margin: 0; color: #e94560; font-size: 2em; }
+        nav a { color: #a8dadc; margin-left: 20px; text-decoration: none; font-size: 1em; }
+        nav a:hover { text-decoration: underline; }
+        .hero { text-align: center; padding: 60px 20px; }
+        .hero h2 { font-size: 2em; color: #e94560; }
+        .hero p  { color: #aaa; font-size: 1.1em; max-width: 500px; margin: 10px auto 30px; }
+        .cards { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; padding: 0 20px 60px; }
+        .card {
+            background: #16213e; border-radius: 10px; padding: 30px 26px;
+            width: 220px; text-align: center; text-decoration: none; color: #eee;
+            transition: transform .15s;
+        }
+        .card:hover { transform: translateY(-4px); }
+        .card .icon { width: 48px; height: 48px; margin: 0 auto 14px; color: #a8dadc; }
+        .card h3 { color: #e94560; margin: 0 0 8px; }
+        .card p { color: #aaa; font-size: 0.9em; margin: 0; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>StreamFlix</h1>
+    <nav>
+        <a href="/usuarios">Usuarios</a>
+        <a href="/peliculas">Películas</a>
+        <a href="/panel">Panel IA</a>
+        <a href="/explorar">Dataset</a>
+    </nav>
+</header>
+
+<div class="hero">
+    <h2>Sistema de Recomendación con IA</h2>
+    <p>Árbol de decisión J48 que predice qué películas recomendar según el perfil del usuario.</p>
+</div>
+
+<div class="cards">
+    <a href="/usuarios" class="card">
+        <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8" r="4"/>
+                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+            </svg>
+        </div>
+        <h3>Usuarios</h3>
+        <p>Gestiona los usuarios y sus géneros favoritos</p>
+    </a>
+    <a href="/peliculas" class="card">
+        <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                <path d="M2 8h20M7 4v4M12 4v4M17 4v4M7 12v4M12 12v4M17 12v4"/>
+            </svg>
+        </div>
+        <h3>Películas</h3>
+        <p>Administra el catálogo de películas</p>
+    </a>
+    <a href="/panel" class="card">
+        <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
+            </svg>
+        </div>
+        <h3>Panel IA</h3>
+        <p>Genera predicciones personalizadas con el árbol J48</p>
+    </a>
+</div>
+
+</body>
+</html>

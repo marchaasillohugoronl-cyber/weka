@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: streamflix
+    runtime: docker
+    plan: free
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:postgresql://ep-round-mountain-apz8t2t3-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require
+      - key: SPRING_DATASOURCE_USERNAME
+        value: neondb_owner
+      - key: SPRING_DATASOURCE_PASSWORD
+        value: npg_GLNokF2W7MHX

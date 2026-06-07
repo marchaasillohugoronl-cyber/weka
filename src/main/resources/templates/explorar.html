@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Exploración del Dataset – StreamFlix</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; background: #1a1a2e; color: #eee; }
+        h1, h2, h3 { color: #e94560; }
+        nav a { color: #a8dadc; margin-right: 15px; text-decoration: none; }
+        nav a:hover { text-decoration: underline; }
+
+        .bloque {
+            background: #16213e; border-radius: 10px; padding: 22px;
+            margin: 20px 0;
+        }
+        .bloque h2 { margin-top: 0; font-size: 1.1em; border-bottom: 1px solid #333; padding-bottom: 8px; }
+
+        /* Consola estilo terminal */
+        .consola {
+            background: #0d0d0d; border-radius: 6px; padding: 16px;
+            font-family: monospace; font-size: 0.88em; color: #00ff88;
+            white-space: pre; overflow-x: auto; max-height: 320px; overflow-y: auto;
+        }
+        .consola .comentario { color: #888; }
+        .consola .valor      { color: #f0e68c; }
+
+        /* Tabla de atributos */
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th { background: #0f3460; padding: 9px 12px; text-align: left; border: 1px solid #333; }
+        td { padding: 8px 12px; border: 1px solid #333; font-size: 0.9em; }
+        tr:nth-child(even) { background: #162447; }
+
+        /* KPIs */
+        .kpis { display: flex; gap: 16px; flex-wrap: wrap; margin: 14px 0; }
+        .kpi  { background: #0f3460; border-radius: 8px; padding: 14px 22px; text-align: center; flex: 1; }
+        .kpi .v { font-size: 2em; font-weight: bold; color: #a8dadc; }
+        .kpi .l { color: #aaa; font-size: 0.82em; margin-top: 4px; }
+
+        /* Formulario de predicción */
+        .form-pred { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-top: 12px; }
+        .form-pred label { display: block; color: #aaa; font-size: 0.82em; margin-bottom: 4px; }
+        .form-pred input, .form-pred select {
+            padding: 7px 10px; border-radius: 5px; border: 1px solid #444;
+            background: #0f3460; color: #eee; font-size: 0.9em;
+        }
+        .btn { padding: 8px 20px; background: #e94560; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
+
+        /* Resultado predicción */
+        .resultado {
+            margin-top: 14px; padding: 16px 22px; border-radius: 8px; font-size: 1.05em;
+            border-left: 4px solid #a8dadc;
+        }
+        .res-si  { background: #1a5c36; border-color: #27ae60; }
+        .res-no  { background: #5c1a1a; border-color: #e74c3c; }
+        .badge-si { background: #27ae60; color: #fff; padding: 3px 12px; border-radius: 12px; }
+        .badge-no { background: #e74c3c; color: #fff; padding: 3px 12px; border-radius: 12px; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/">Inicio</a>
+    <a href="/usuarios">Usuarios</a>
+    <a href="/peliculas">Películas</a>
+    <a href="/panel">Panel IA</a>
+    <a href="/metricas">Métricas</a>
+    <a href="/explorar" style="color:#e94560">Explorar Dataset</a>
+</nav>
+
+<h1>Exploración del Dataset StreamFlix</h1>
+
+<!-- ── SECCIÓN 1: Exploración (estilo ExploracionWine) ── -->
+<div class="bloque">
+    <h2>Información del dataset</h2>
+
+    <div class="kpis">
+        <div class="kpi">
+            <div class="v" th:text="${exp['cantMuestras']}"></div>
+            <div class="l">Cantidad de muestras</div>
+        </div>
+        <div class="kpi">
+            <div class="v" th:text="${exp['cantColumnas']}"></div>
+            <div class="l">Cantidad de columnas (atributos)</div>
+        </div>
+    </div>
+
+    <h3>Listado de atributos</h3>
+    <table>
+        <thead><tr><th>#</th><th>Nombre del atributo</th></tr></thead>
+        <tbody>
+            <tr th:each="attr, s : ${exp['atributos']}">
+                <td th:text="${s.index}"></td>
+                <td th:text="${attr}"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3 style="margin-top:20px">Muestras del dataset</h3>
+    <div class="consola"><span class="comentario">// Recorrido con índice (equivalente: for int i = 0; i &lt; cantMuestras; i++)
+// wine.instance(i) → en StreamFlix: data.instance(i)
+</span><span th:each="m, s : ${exp['muestras']}" th:text="'[' + ${s.index} + '] ' + ${m} + '&#10;'"></span></div>
+
+    <h3 style="margin-top:16px">Muestras II (for-each)</h3>
+    <div class="consola"><span class="comentario">// Recorrido con for-each (equivalente: for Instance i : wine)
+// En StreamFlix: for Instance i : data
+</span><span th:each="m : ${exp['muestrasForEach']}" th:text="${m} + '&#10;'"></span></div>
+</div>
+
+<!-- ── SECCIÓN 2: Evaluación 80/20 (estilo WinePauta) ── -->
+<div class="bloque">
+    <h2>Evaluación KNN — split 80% entrenamiento / 20% prueba</h2>
+
+    <div class="kpis">
+        <div class="kpi">
+            <div class="v" th:text="${eval['totalMuestras']}"></div>
+            <div class="l">Total de muestras</div>
+        </div>
+        <div class="kpi">
+            <div class="v" th:text="${eval['trainSize']}"></div>
+            <div class="l">Entrenamiento (80%)</div>
+        </div>
+        <div class="kpi">
+            <div class="v" th:text="${eval['testSize']}"></div>
+            <div class="l">Prueba (20%)</div>
+        </div>
+        <div class="kpi">
+            <div class="v" th:text="'K=' + ${eval['k']}"></div>
+            <div class="l">Vecinos (IBk)</div>
+        </div>
+        <div class="kpi">
+            <div class="v" th:text="${eval['accuracy']} + '%'"></div>
+            <div class="l">Accuracy</div>
+        </div>
+        <div class="kpi">
+            <div class="v" th:text="${eval['precision']} + '%'"></div>
+            <div class="l">Precisión (SI)</div>
+        </div>
+        <div class="kpi">
+            <div class="v" th:text="${eval['recall']} + '%'"></div>
+            <div class="l">Recall (SI)</div>
+        </div>
+    </div>
+
+    <h3>Resumen de evaluación</h3>
+    <div class="consola" th:text="${eval['resumen']}"></div>
+
+    <h3 style="margin-top:16px">Predicción de ejemplo (edad=28, ACCION, puntaje=4, favorito=SI, calificadas=3)</h3>
+    <div class="consola"><span class="comentario">// double indice = knn.classifyInstance(nueva);
+// String clasePredicha = train.classAttribute().value((int) indice);
+</span>Índice predicho : <span class="valor" th:text="${eval['indiceEjemplo']}"></span>
+Clase predicha  : <span class="valor" th:text="${eval['claseEjemplo']}"></span></div>
+</div>
+
+<!-- ── SECCIÓN 3: Predicción KNN individual (estilo WineKNN / CancerKNN) ── -->
+<div class="bloque">
+    <h2>Predicción individual KNN (k=3)</h2>
+    <p style="color:#aaa;margin-top:0">Ingresa los valores del perfil para predecir si se recomienda la película.</p>
+
+    <form action="/explorar/predecir" method="get">
+        <div class="form-pred">
+            <div>
+                <label>Edad</label>
+                <input type="number" name="edad" value="25" min="1" max="100" style="width:80px">
+            </div>
+            <div>
+                <label>Categoría</label>
+                <select name="categoria">
+                    <option value="ACCION">ACCION</option>
+                    <option value="ROMANCE">ROMANCE</option>
+                    <option value="TERROR">TERROR</option>
+                    <option value="COMEDIA">COMEDIA</option>
+                    <option value="CIENCIA_FICCION">CIENCIA_FICCION</option>
+                </select>
+            </div>
+            <div>
+                <label>Puntuación (1-5)</label>
+                <input type="number" name="puntuacion" value="4" min="1" max="5" step="0.5" style="width:80px">
+            </div>
+            <div>
+                <label>¿Género favorito?</label>
+                <select name="esFavorito">
+                    <option value="SI">SI</option>
+                    <option value="NO">NO</option>
+                </select>
+            </div>
+            <div>
+                <label>Calificaciones en género</label>
+                <input type="number" name="numCalificaciones" value="2" min="0" max="10" style="width:80px">
+            </div>
+            <button class="btn" type="submit">Predecir</button>
+        </div>
+    </form>
+
+    <!-- Resultado de la predicción -->
+    <div th:if="${prediccion != null}"
+         th:class="${prediccion['clase'] == 'SI'} ? 'resultado res-si' : 'resultado res-no'"
+         style="margin-top:16px">
+        <div class="consola" style="background:transparent;padding:0"><span class="comentario">// double indice = knn.classifyInstance(nueva);    → </span><span class="valor" th:text="${prediccion['indice']}"></span>
+<span class="comentario">// String clasePredicha = streamflix.classAttribute().value((int) indice); → </span><span class="valor" th:text="${prediccion['clase']}"></span>
+<span class="comentario">// Confianza (distribucion[0] * 100): </span><span class="valor" th:text="${prediccion['confianza']}"></span>
+<span class="comentario">// Cantidad de vecinos por votación: </span><span class="valor" th:text="${prediccion['k']}"></span></div>
+        <p style="margin:10px 0 0">
+            Resultado:
+            <span th:if="${prediccion['clase'] == 'SI'}"  class="badge-si">RECOMENDAR SI</span>
+            <span th:unless="${prediccion['clase'] == 'SI'}" class="badge-no">RECOMENDAR NO</span>
+            &nbsp; Confianza: <strong th:text="${prediccion['confianza']}"></strong>
+        </p>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,24 @@
+@relation peliculas
+
+@attribute edad numeric
+
+@attribute categoria {
+ACCION,
+COMEDIA,
+DRAMA,
+TERROR
+}
+
+@attribute puntuacion numeric
+
+@attribute recomendar {
+SI,
+NO
+}
+
+@data
+
+20,ACCION,5,SI
+22,ACCION,4,SI
+30,DRAMA,2,NO
+18,TERROR,5,SI

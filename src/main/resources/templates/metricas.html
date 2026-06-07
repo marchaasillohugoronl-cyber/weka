@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Métricas del Modelo – StreamFlix</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; background: #1a1a2e; color: #eee; }
+        h1, h2 { color: #e94560; }
+        nav a { color: #a8dadc; margin-right: 15px; text-decoration: none; }
+        nav a:hover { text-decoration: underline; }
+
+        .grid { display: flex; flex-wrap: wrap; gap: 20px; margin: 24px 0; }
+        .kpi {
+            background: #16213e; border-radius: 10px; padding: 20px 28px;
+            text-align: center; min-width: 140px; flex: 1;
+        }
+        .kpi .valor { font-size: 2.4em; font-weight: bold; color: #a8dadc; }
+        .kpi .label { color: #aaa; font-size: 0.88em; margin-top: 6px; }
+        .kpi.destacado .valor { color: #f0e68c; }
+        .kpi.ok  .valor { color: #27ae60; }
+        .kpi.warn .valor { color: #f39c12; }
+
+        .section { background: #16213e; border-radius: 10px; padding: 22px; margin: 20px 0; }
+        .section h2 { margin-top: 0; font-size: 1.1em; }
+
+        table { border-collapse: collapse; width: 100%; }
+        th { background: #0f3460; padding: 9px 12px; text-align: left; border: 1px solid #333; }
+        td { padding: 9px 12px; border: 1px solid #333; }
+        tr:nth-child(even) { background: #162447; }
+
+        /* Matriz de confusión */
+        .confusion { display: inline-grid; grid-template-columns: auto auto auto; gap: 4px; margin-top: 10px; }
+        .c-header { color: #aaa; font-size: 0.82em; padding: 6px 14px; text-align: center; }
+        .c-cell {
+            padding: 18px 24px; border-radius: 6px; font-size: 1.6em;
+            font-weight: bold; text-align: center; min-width: 60px;
+        }
+        .c-vp { background: #1a5c36; color: #2ecc71; }
+        .c-vn { background: #1a3a5c; color: #3498db; }
+        .c-fp { background: #5c2a1a; color: #e67e22; }
+        .c-fn { background: #5c1a1a; color: #e74c3c; }
+        .c-label { color: #888; font-size: 0.8em; text-align: center; padding: 4px; }
+
+        .formula { background: #0f3460; border-radius: 6px; padding: 12px 16px; font-family: monospace; font-size: 0.92em; margin: 8px 0; color: #a8dadc; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.82em; }
+        .badge-g { background: #27ae60; }
+        .badge-a { background: #f39c12; color: #111; }
+        .badge-r { background: #e74c3c; }
+
+        .nota { color: #aaa; font-size: 0.85em; margin-top: 8px; }
+        .comparacion th { color: #f0e68c; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/">Inicio</a>
+    <a href="/usuarios">Usuarios</a>
+    <a href="/peliculas">Películas</a>
+    <a href="/panel">Panel IA</a>
+    <a href="/metricas" style="color:#e94560">Métricas</a>
+</nav>
+
+<h1>Métricas del Modelo — 10-fold Cross-Validation</h1>
+<p style="color:#aaa">Algoritmo: <strong style="color:#a8dadc">RandomForest</strong> (100 árboles) &nbsp;|&nbsp;
+   Dataset: <strong style="color:#a8dadc" th:text="${eval['totalInstancias']} + ' instancias'"></strong> &nbsp;|&nbsp;
+   Folds: <strong style="color:#a8dadc" th:text="${eval['folds']}"></strong>
+</p>
+
+<!-- KPIs principales -->
+<div class="grid">
+    <div class="kpi destacado">
+        <div class="valor" th:text="${eval['accuracy']} + '%'"></div>
+        <div class="label">Accuracy<br><small>% instancias correctas</small></div>
+    </div>
+    <div class="kpi ok">
+        <div class="valor" th:text="${eval['precisionSI']} + '%'"></div>
+        <div class="label">Precisión (SI)<br><small>De los que predijo SI, ¿cuántos eran SI?</small></div>
+    </div>
+    <div class="kpi ok">
+        <div class="valor" th:text="${eval['recallSI']} + '%'"></div>
+        <div class="label">Exhaustividad (SI)<br><small>De los SI reales, ¿cuántos detectó?</small></div>
+    </div>
+    <div class="kpi">
+        <div class="valor" th:text="${eval['f1SI']} + '%'"></div>
+        <div class="label">F1-Score (SI)<br><small>Media armónica Precisión–Recall</small></div>
+    </div>
+    <div class="kpi warn">
+        <div class="valor" th:text="${eval['kappa']}"></div>
+        <div class="label">Kappa de Cohen<br><small>&gt;0.6 = acuerdo sustancial</small></div>
+    </div>
+    <div class="kpi">
+        <div class="valor" th:text="${eval['errorMedioAbsoluto']}"></div>
+        <div class="label">Error Medio Absoluto<br><small>Más bajo = mejor</small></div>
+    </div>
+</div>
+
+<!-- Fórmulas -->
+<div class="section">
+    <h2>Fórmulas aplicadas</h2>
+    <div class="formula">Accuracy  = (VP + VN) / Total &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        → <span th:text="${eval['accuracy']} + '%'"></span></div>
+    <div class="formula">Precisión = VP / (VP + FP) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        → <span th:text="${eval['precisionSI']} + '%'"></span></div>
+    <div class="formula">Recall    = VP / (VP + FN) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        → <span th:text="${eval['recallSI']} + '%'"></span></div>
+    <div class="formula">F1        = 2 × (Precisión × Recall) / (Precisión + Recall)
+        → <span th:text="${eval['f1SI']} + '%'"></span></div>
+</div>
+
+<!-- Matriz de confusión -->
+<div class="section">
+    <h2>Matriz de confusión</h2>
+    <p class="nota">Filas = clase real &nbsp;|&nbsp; Columnas = clase predicha</p>
+
+    <div class="confusion">
+        <div class="c-header"></div>
+        <div class="c-header">Predicho SI</div>
+        <div class="c-header">Predicho NO</div>
+
+        <div class="c-header" style="writing-mode:vertical-rl;padding:10px">Real SI</div>
+        <div class="c-cell c-vp">
+            <div th:text="${eval['VP']}"></div>
+            <div class="c-label">VP</div>
+        </div>
+        <div class="c-cell c-fn">
+            <div th:text="${eval['FN']}"></div>
+            <div class="c-label">FN</div>
+        </div>
+
+        <div class="c-header" style="writing-mode:vertical-rl;padding:10px">Real NO</div>
+        <div class="c-cell c-fp">
+            <div th:text="${eval['FP']}"></div>
+            <div class="c-label">FP</div>
+        </div>
+        <div class="c-cell c-vn">
+            <div th:text="${eval['VN']}"></div>
+            <div class="c-label">VN</div>
+        </div>
+    </div>
+
+    <p class="nota" style="margin-top:14px">
+        <span class="badge badge-g">VP</span> Verdaderos Positivos — predijo SI y era SI &nbsp;
+        <span class="badge badge-a">FP</span> Falsos Positivos — predijo SI pero era NO &nbsp;
+        <span class="badge badge-r">FN</span> Falsos Negativos — predijo NO pero era SI &nbsp;
+        <span class="badge" style="background:#1a3a5c">VN</span> Verdaderos Negativos — predijo NO y era NO
+    </p>
+</div>
+
+<!-- Tabla comparativa -->
+<div class="section">
+    <h2>Comparativa: sistema anterior vs StreamFlix IA</h2>
+    <table class="comparacion">
+        <thead>
+            <tr>
+                <th>Métrica</th>
+                <th>Sistema anterior (ranking general)</th>
+                <th>StreamFlix IA (RandomForest)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Personalización</td>
+                <td>0% — mismo ranking para todos</td>
+                <td>100% — predicción por perfil individual</td>
+            </tr>
+            <tr>
+                <td>Accuracy</td>
+                <td>No medible</td>
+                <td th:text="${eval['accuracy']} + '%'"></td>
+            </tr>
+            <tr>
+                <td>Precisión (clase SI)</td>
+                <td>No medible</td>
+                <td th:text="${eval['precisionSI']} + '%'"></td>
+            </tr>
+            <tr>
+                <td>Exhaustividad/Recall (SI)</td>
+                <td>No medible</td>
+                <td th:text="${eval['recallSI']} + '%'"></td>
+            </tr>
+            <tr>
+                <td>F1-Score</td>
+                <td>No medible</td>
+                <td th:text="${eval['f1SI']} + '%'"></td>
+            </tr>
+            <tr>
+                <td>Cold-start (usuario nuevo)</td>
+                <td>Recomendación genérica</td>
+                <td>Funciona con edad + géneros favoritos</td>
+            </tr>
+            <tr>
+                <td>Reentrenamiento</td>
+                <td>Manual / offline</td>
+                <td>Automático al registrar calificación</td>
+            </tr>
+            <tr>
+                <td>Kappa de Cohen</td>
+                <td>N/A</td>
+                <td th:text="${eval['kappa']}"></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Cómo interpretar -->
+<div class="section">
+    <h2>Interpretación de resultados</h2>
+    <table>
+        <thead>
+            <tr><th>Rango Accuracy</th><th>Interpretación</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>&lt; 60%</td><td>Modelo deficiente — necesita más datos</td></tr>
+            <tr><td>60% – 74%</td><td>Modelo aceptable</td></tr>
+            <tr><td>75% – 89%</td><td>Modelo bueno</td></tr>
+            <tr><td>&ge; 90%</td><td>Modelo muy bueno</td></tr>
+        </tbody>
+    </table>
+    <p class="nota">Con datasets pequeños (&lt;200 instancias) el accuracy puede variar entre ejecuciones.
+    La cross-validation de 10 folds minimiza esta varianza usando todas las instancias tanto para entrenamiento como para evaluación.</p>
+</div>
+
+</body>
+</html>
