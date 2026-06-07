@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Recomendaciones – StreamFlix</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; background: #1a1a2e; color: #eee; }
+        h1 { color: #e94560; }
+        nav a { color: #a8dadc; margin-right: 15px; text-decoration: none; }
+        nav a:hover { text-decoration: underline; }
+        .back-btn {
+            display: inline-block; margin: 15px 0; padding: 8px 18px;
+            background: #e94560; color: #fff; border-radius: 5px; text-decoration: none;
+        }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th { background: #16213e; padding: 10px; text-align: left; border: 1px solid #333; }
+        td { padding: 9px 10px; border: 1px solid #333; }
+        tr:nth-child(even) { background: #162447; }
+        .badge-si  { background: #27ae60; color: #fff; padding: 3px 10px; border-radius: 12px; font-size: 0.85em; }
+        .badge-no  { background: #7f8c8d; color: #fff; padding: 3px 10px; border-radius: 12px; font-size: 0.85em; }
+        .badge-fav { background: #f39c12; color: #fff; padding: 3px 10px; border-radius: 12px; font-size: 0.85em; }
+        .confianza { font-weight: bold; color: #f0e68c; }
+        .empty { color: #aaa; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/">Inicio</a>
+    <a href="/usuarios">Usuarios</a>
+    <a href="/peliculas">Películas</a>
+    <a href="/panel">Panel IA</a>
+</nav>
+
+<h1>Recomendaciones para: <span th:text="${nombreUsuario}"></span></h1>
+
+<a class="back-btn" href="/panel">← Volver al Panel</a>
+
+<div th:if="${peliculas.empty}" class="empty">
+    <p>No hay películas candidatas para recomendar (el usuario ya calificó todo el catálogo).</p>
+</div>
+
+<table th:unless="${peliculas.empty}">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Título</th>
+            <th>Categoría</th>
+            <th>Año</th>
+            <th>Predicci&oacute;n</th>
+            <th>Confianza IA</th>
+            <th>G&eacute;nero Favorito</th>
+            <th>Pelis calificadas en g&eacute;nero</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="r, stat : ${peliculas}">
+            <td th:text="${stat.count}"></td>
+            <td th:text="${r['titulo']}"></td>
+            <td th:text="${r['categoria']}"></td>
+            <td th:text="${r['anio']}"></td>
+            <td>
+                <span th:if="${r['recomendar'] == 'SI'}"  class="badge-si">SI</span>
+                <span th:unless="${r['recomendar'] == 'SI'}" class="badge-no">NO</span>
+            </td>
+            <td class="confianza" th:text="${r['confianza']}"></td>
+            <td>
+                <span th:if="${r['esFavorito'] == 'SI'}" class="badge-fav">Favorito</span>
+                <span th:unless="${r['esFavorito'] == 'SI'}">&#8212;</span>
+            </td>
+            <td th:text="${r['numCalificaciones']}"></td>
+        </tr>
+    </tbody>
+</table>
+
+<form th:action="'/api/recomendaciones/reentrenar'" method="post" style="margin-top:20px">
+    <button type="submit" style="padding:8px 18px; background:#16213e; color:#a8dadc; border:1px solid #a8dadc; border-radius:5px; cursor:pointer;">
+        Reentrenar modelo
+    </button>
+</form>
+
+</body>
+</html>

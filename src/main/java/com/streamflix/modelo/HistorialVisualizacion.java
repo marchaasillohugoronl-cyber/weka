@@ -2,11 +2,12 @@ package com.streamflix.modelo;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "calificaciones")
+@Table(name = "historial_visualizacion")
 @Data
-public class Calificacion {
+public class HistorialVisualizacion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,5 +15,6 @@ public class Calificacion {
 
     private String usuarioId;
     private String peliculaId;
-    private Integer puntuacion;
+    private Integer porcentajeVisto;
+    private LocalDateTime fechaVisualizacion;
 }

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Películas – StreamFlix</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; background: #1a1a2e; color: #eee; }
+        h1 { color: #e94560; }
+        nav a { color: #a8dadc; margin-right: 15px; text-decoration: none; }
+        nav a:hover { text-decoration: underline; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th { background: #16213e; padding: 10px; text-align: left; border: 1px solid #333; }
+        td { padding: 9px 10px; border: 1px solid #333; }
+        tr:nth-child(even) { background: #162447; }
+        .form-card { background: #16213e; border-radius: 10px; padding: 22px; margin-top: 28px; max-width: 520px; }
+        .form-card h2 { color: #a8dadc; margin-top: 0; font-size: 1em; }
+        label { display: block; color: #aaa; font-size: 0.82em; margin: 10px 0 3px; }
+        input, select, textarea { width: 100%; padding: 8px 10px; border-radius: 5px; border: 1px solid #444;
+                        background: #0f3460; color: #eee; font-size: 0.9em; box-sizing: border-box; }
+        .btn { margin-top: 14px; padding: 9px 22px; background: #e94560; color: #fff;
+               border: none; border-radius: 5px; cursor: pointer; font-size: 0.95em; }
+        .del { color: #e94560; text-decoration: none; font-size: 0.85em; }
+        .del:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/">Inicio</a>
+    <a href="/usuarios">Usuarios</a>
+    <a href="/peliculas" style="color:#e94560">Películas</a>
+    <a href="/panel">Panel IA</a>
+</nav>
+
+<h1>Gestión de Películas</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th><th>Título</th><th>Categoría</th><th>Año</th><th>Duración (min)</th><th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="p : ${peliculas}">
+            <td th:text="${p.id}"></td>
+            <td th:text="${p.titulo}"></td>
+            <td th:text="${p.categoria}"></td>
+            <td th:text="${p.anio}"></td>
+            <td th:text="${p.duracionMinutos}"></td>
+            <td>
+                <a class="del" th:href="@{/peliculas/eliminar/{id}(id=${p.id})}"
+                   onclick="return confirm('¿Eliminar película?')">Eliminar</a>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="form-card">
+    <h2>Agregar película</h2>
+    <form action="/peliculas" method="post">
+        <label>ID</label>
+        <input type="text" name="id" required placeholder="Ej: P001">
+        <label>Título</label>
+        <input type="text" name="titulo" required placeholder="Ej: El origen">
+        <label>Categoría</label>
+        <select name="categoria" required>
+            <option value="ACCION">Acción</option>
+            <option value="ROMANCE">Romance</option>
+            <option value="TERROR">Terror</option>
+            <option value="COMEDIA">Comedia</option>
+            <option value="CIENCIA_FICCION">Ciencia Ficción</option>
+        </select>
+        <label>Año</label>
+        <input type="number" name="anio" placeholder="Ej: 2020">
+        <label>Duración (minutos)</label>
+        <input type="number" name="duracionMinutos" placeholder="Ej: 120">
+        <label>Descripción</label>
+        <textarea name="descripcion" rows="2" placeholder="Breve descripción..."></textarea>
+        <button class="btn" type="submit">Guardar</button>
+    </form>
+</div>
+
+</body>
+</html>

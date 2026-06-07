@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel IA – StreamFlix</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; background: #1a1a2e; color: #eee; }
+        h1, h2 { color: #e94560; }
+        nav a { color: #a8dadc; margin-right: 15px; text-decoration: none; }
+        nav a:hover { text-decoration: underline; }
+        .card {
+            background: #16213e; border-radius: 8px; padding: 20px;
+            margin: 20px 0; max-width: 600px;
+        }
+        label { display: block; margin-bottom: 6px; color: #a8dadc; }
+        select, input[type=text] {
+            padding: 8px 12px; border-radius: 5px; border: 1px solid #444;
+            background: #0f3460; color: #eee; font-size: 1em; width: 100%; box-sizing: border-box;
+        }
+        .btn-primary {
+            margin-top: 12px; padding: 10px 24px; background: #e94560;
+            color: #fff; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;
+        }
+        .btn-primary:hover { background: #c0392b; }
+        table { border-collapse: collapse; width: 100%; margin-top: 16px; }
+        th { background: #16213e; padding: 9px; text-align: left; border: 1px solid #333; }
+        td { padding: 8px; border: 1px solid #333; font-size: 0.92em; }
+        tr:nth-child(even) { background: #162447; }
+        .tag {
+            padding: 2px 8px; border-radius: 10px; font-size: 0.8em;
+            display: inline-block;
+        }
+        .tag-ver { background: #27ae60; color: #fff; }
+        .summary { color: #aaa; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/">Inicio</a>
+    <a href="/usuarios">Usuarios</a>
+    <a href="/peliculas">Películas</a>
+    <a href="/panel">Panel IA</a>
+    <a href="/metricas">Métricas</a>
+</nav>
+
+<h1>Panel de Recomendaciones IA</h1>
+<p class="summary">Selecciona un usuario para que el árbol J48 prediga qué películas debería ver.</p>
+
+<!-- Selector de usuario -->
+<div class="card">
+    <label for="selUsuario">Usuario:</label>
+    <select id="selUsuario">
+        <option value="">-- Elige un usuario --</option>
+        <option th:each="u : ${usuarios}"
+                th:value="${u.id}"
+                th:text="${u.nombre} + ' (' + ${u.id} + ', ' + ${u.edad} + ' años)'">
+        </option>
+    </select>
+
+    <label for="txtUsuario" style="margin-top:10px">O escribe el ID manualmente:</label>
+    <input type="text" id="txtUsuario" placeholder="ej: u1">
+
+    <button class="btn-primary" onclick="irARecomendaciones()">Ver recomendaciones →</button>
+</div>
+
+<!-- Tabla resumen de usuarios -->
+<h2>Usuarios registrados</h2>
+<div th:if="${usuarios.empty}">
+    <p style="color:#aaa">No hay usuarios. <a href="/usuarios" style="color:#a8dadc">Agregar usuario</a></p>
+</div>
+<table th:unless="${usuarios.empty}">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Edad</th>
+            <th>País</th>
+            <th>Géneros favoritos</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="u : ${usuarios}">
+            <td th:text="${u.id}"></td>
+            <td th:text="${u.nombre}"></td>
+            <td th:text="${u.edad}"></td>
+            <td th:text="${u.pais}"></td>
+            <td th:text="${u.generosFavoritos}"></td>
+            <td>
+                <a th:href="'/recomendaciones/' + ${u.id}" class="tag tag-ver">Ver predicciones</a>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<script>
+function irARecomendaciones() {
+    const sel = document.getElementById('selUsuario').value;
+    const txt = document.getElementById('txtUsuario').value.trim();
+    const id = sel || txt;
+    if (!id) { alert('Elige o escribe un ID de usuario.'); return; }
+    window.location.href = '/recomendaciones/' + encodeURIComponent(id);
+}
+</script>
+
+</body>
+</html>
